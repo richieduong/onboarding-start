@@ -13,8 +13,8 @@ Not sure at the moment
 
 ## How to test
 
-Explain how to use your project
+Doing some tests
 
 ## External hardware
 
-List external hardware used in your project (e.g. PMOD, LED display, etc), if any
+idk yet at the moment
