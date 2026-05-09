@@ -15,7 +15,7 @@ module tt_um_uwasic_onboarding_richard(
   input  wire       ena,      // always 1 when the design is powered
   input  wire       clk,      // clock
   input  wire       rst_n     // reset_n - low to reset
-)
+);
 
   // Add this inside the module block
   assign uio_oe = 8'hFF; // Set all IOs to output
@@ -26,9 +26,6 @@ module tt_um_uwasic_onboarding_richard(
   wire [7:0] en_reg_pwm_7_0;
   wire [7:0] en_reg_pwm_15_8;
   wire [7:0] pwm_duty_cycle;
-
-  // Instantiate the SPI Peripheral module
-  spi_perippheral
 
   // Instantiate the PWM module
   pwm_peripheral pwm_peripheral_inst (
@@ -46,7 +43,7 @@ module tt_um_uwasic_onboarding_richard(
     .clk(clk),
     .sclk(ui_in[0]),
     .copi(ui_in[1]),
-    .ncs(ui_in[2]),
+    .nCS(ui_in[2]),
     .rst_n(rst_n),
     .en_reg_out_7_0(en_reg_out_7_0),
     .en_reg_out_15_8(en_reg_out_15_8),
@@ -58,3 +55,4 @@ module tt_um_uwasic_onboarding_richard(
 
   // Add uio_in and ui_in[7:3] to the list of unused signals:
   wire _unused = &{ena, ui_in[7:3], uio_in, 1'b0};
+endmodule
