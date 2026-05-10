@@ -218,5 +218,4 @@ async def test_pwm_duty(dut):
     period = t_rising_edge_2 - t_rising_edge
     
     duty_cycle = (high_time/period) * 100
-    dut._log.info(f"Duty = {duty_cycle:.2f}%")
     dut._log.info("PWM Duty Cycle test completed successfully")
