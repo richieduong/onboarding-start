@@ -151,11 +151,72 @@ async def test_spi(dut):
 
 @cocotb.test()
 async def test_pwm_freq(dut):
-    # Write your test here
-    dut._log.info("PWM Frequency test completed successfully")
+    # Set the clock period to 100 ns (10 MHz)
+    clock = Clock(dut.clk, 100, units="ns")
+    cocotb.start_soon(clock.start())
+    
+    # resetting the chip
+    await chip_reset(dut)
+    
+    first_time = await wait_rising_edge(dut)
+    second_time = await wait_rising_edge(dut)
+    
+    period_time = second_time - first_time
+    frequency = (1e9/period_time)
+    
+    # Checking if the code satisfies the tolerance range
+    assert (2970 <= frequency <= 3030)
 
 
+# helper function #1 
+async def wait_rising_edge(dut):
+    while (int(dut.uo_out.value) & 0b1):
+        await RisingEdge(dut.clk)
+    while not (int(dut.uo_out.value) & 0b1):
+        await RisingEdge(dut.clk)
+    current_time = cocotb.utils.get_sim_time(units="ns")
+    return current_time
+
+async def wait_falling_edge(dut):
+    while not (int(dut.uo_out.value) & 0b1):
+        await RisingEdge(dut.clk)
+    while (int(dut.uo_out.value) & 0b1):
+        await RisingEdge(dut.clk)
+    current_time = cocotb.utils.get_sim_time(units="ns")
+    return current_time
+
+# helper function #2
+async def chip_reset(dut, duty=0x80):
+    # resetting the chip
+    dut.ena.value = 1
+    dut.ui_in.value = ui_in_logicarray(1, 0, 0)
+    dut.rst_n.value = 0
+    await ClockCycles(dut.clk, 5)
+    dut.rst_n.value = 1
+    await ClockCycles(dut.clk, 5)
+    await send_spi_transaction(dut, 1, 0x00, 0x01)
+    await send_spi_transaction(dut, 1, 0x02, 0x01)
+    await send_spi_transaction(dut, 1, 0x04, duty)
+    await ClockCycles(dut.clk, 10000)
+    
 @cocotb.test()
 async def test_pwm_duty(dut):
     # Write your test here
+    # Set the clock period to 100 ns (10 MHz)
+    clock = Clock(dut.clk, 100, units="ns")
+    cocotb.start_soon(clock.start())
+    
+    # resetting the chip
+    await chip_reset(dut)
+    
+    # calculating the times
+    t_rising_edge = await wait_rising_edge(dut)
+    t_falling_edge = await wait_falling_edge(dut)
+    t_rising_edge_2 = await wait_rising_edge(dut)
+    
+    high_time = t_falling_edge - t_rising_edge
+    period = t_rising_edge_2 - t_rising_edge
+    
+    duty_cycle = (high_time/period) * 100
+    dut._log.info(f"Duty = {duty_cycle:.2f}%")
     dut._log.info("PWM Duty Cycle test completed successfully")
